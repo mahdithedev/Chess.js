@@ -1,3 +1,3 @@
 small browser based chess game written in Javascript
 
->Note : project is still under development
+> project is still under development

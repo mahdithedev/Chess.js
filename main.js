@@ -1,23 +1,12 @@
 import './style.css'
 import {Piece , WPawn , BPawn , Rook , Bishop , Knight , Queen , King } from './lib/Pices'
-
-const BOARD = {
-  board:document.querySelector("#bord")
-}
-
-const BOARD_STATE = []
-
-for(let i = 0 ; i < 8 ; i++)
-BOARD_STATE.push([
-  undefined , undefined , undefined , undefined , undefined , undefined , undefined , undefined
-])
+import BOARD from "./lib/controller"
 
 let SelectedTiles = []
 
 let currentTeam = 1
 
 let selectedPice = {}
-
 
 const cleanSelections = () => {
 
@@ -245,61 +234,20 @@ const handleSelection = async e => {
 
 }
 
-const addPiece = (pieceObj , uri = "") => {
+const addPiece = piece => {
 
-      const {x,y} = pieceObj
+    const pieceDomElement = piece.domElment
 
-      BOARD_STATE[y][x] = pieceObj
+    BOARD_STATE[piece.y][piece.x] = piece
 
-      const piece = document.createElement("div")
-      piece.id = `P${y}${x}`
-      piece.classList.add("piece")
-
-      piece.style.width = (window.innerHeight/8) + "px"
-      piece.style.height = `${(window.innerHeight/8)}px`
-      
-      piece.style.top = `${(y*78.125) }px`
-      piece.style.left = `${(x*78.125)}px`
-
-      piece.onclick = handleSelection
-
-      piece.style.backgroundImage = `url(../asset/${uri})`
-      piece.style.backgroundRepeat = "no-repeat"
-      piece.style.backgroundPosition = "center"
-      piece.style.backgroundSize = "70% 70%"
-
-      // piece.appendChild(innerImage)
-
-      BOARD.board.appendChild(piece)
+    BOARD.board.appendChild(pieceDomElement)
 
 }
 
 const initPieces = () => {
 
-  addPiece(new Rook(0 , 7 , 1) , "WR.png")
-  addPiece(new Knight(1 , 7 , 1) , "WKN.png")
-  addPiece(new Bishop(2 , 7 , 1) , "WB.png")
-  addPiece(new King(3 , 7 ,1) , "WK.png")
-  addPiece(new Queen(4 , 7 , 1) , "WQ.png")
-  addPiece(new Bishop(5 , 7 , 1) , "WB.png")
-  addPiece(new Knight(6 , 7 , 1) , "WKN.png")
-  addPiece(new Rook(7 , 7 , 1) , "WR.png")
-
-  for(let i = 0 ; i < 8 ; i++)
-      addPiece( new WPawn(i , 6 , 1) , "WP.png" )
-
-  addPiece(new Rook(0 , 0 , -1) , "BR.png")
-  addPiece(new Knight(1 , 0 , -1) , "BKN.png")
-  addPiece(new Bishop(2 , 0 , -1) , "BB.png")
-  addPiece(new King( 3 , 0 ,-1) , "BK.png")
-  addPiece(new Queen(4 , 0 , -1) , "BQ.png")
-  addPiece(new Bishop(5 , 0 , -1) , "BB.png")
-  addPiece(new Knight(6 , 0 , -1) , "BKN.png")
-  addPiece(new Rook(7 , 0 , -1) , "BR.png")
-
-  for(let i = 0 ; i < 8 ; i++)
-      addPiece( new BPawn(i , 1 , -1) , "BP.png")
-
+    addPiece( new WPawn(6 , 2 , 1 , "default") )
+    addPiece( new WPawn(5 , 1 , -1 , "default") )
 
 }
 
