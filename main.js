@@ -2,6 +2,8 @@ import './style.css'
 import {Piece , WPawn , BPawn , Rook , Bishop , Knight , Queen , King } from './lib/Pices'
 import BOARD from "./lib/controller"
 
+document.body.style.backgroundColor = THEME[0]
+
 let changes = []
 
 let selectedPice = undefined
@@ -24,8 +26,8 @@ const revertChanges = () => {
 
 const handleMovnent = (e) => {
   
-  const y = e.target.id[1]
-  const x = e.target.id[2]
+  const y = parseInt(e.target.id[1])
+  const x = parseInt(e.target.id[2])
 
   if(!selectedPice)
   return
@@ -56,7 +58,7 @@ const generateGrid = () => {
           cell.style.width = (window.innerHeight/8) + "px"
 
           cell.id = `C${i}${j}`
-          cell.style.backgroundColor = (-1)**(i+j) == 1 ? "rgb(193 152 89)" : "#966F33"
+          cell.style.backgroundColor = (-1)**(i+j) == 1 ? THEME[1] : THEME[2]
 
           cell.onclick = handleMovnent
 
@@ -144,12 +146,23 @@ const addPiece = piece => {
 
 const initPieces = () => {
 
+    addPiece(new Knight(7 , 1 , 1 , "white"))
+    addPiece(new Knight(7 , 6 , 1 , "white"))
+
+    addPiece(new Rook(7,0,1 , "white"))
+    addPiece(new Rook(7,7,1 , "white"))
+
     for(let i = 0 ; i < 8 ; i++)
         addPiece(new WPawn(6 , i , 1 , "default"))
 
+    addPiece(new Knight(0 , 1 , -1 , "black"))
+    addPiece(new Knight(0 , 6 , -1 , "black") )
+
+    addPiece(new Rook(0,0,-1 , "black"))
+    addPiece(new Rook(0,7,-1 , "black"))
+
     for(let i = 0 ; i < 8 ; i++)
         addPiece(new BPawn(1 , i , -1 , "default"))
-    
 
 }
 
