@@ -148,13 +148,14 @@ const initPieces = () => {
 
     addPiece(new Rook(7,0,1 , "white"))
     addPiece(new Rook(7,7,1 , "white"))
-
     
     addPiece(new Knight(7 , 1 , 1 , "white"))
     addPiece(new Knight(7 , 6 , 1 , "white"))
 
     addPiece(new Bishop(7,2,1 , "white"))
     addPiece(new Bishop(7,5,1 , "white"))
+
+    addPiece(new Queen(7,4,1 , "white"))
 
     for(let i = 0 ; i < 8 ; i++)
         addPiece(new WPawn(6 , i , 1 , "default"))
@@ -167,6 +168,8 @@ const initPieces = () => {
 
     addPiece(new Bishop(0,2,-1 , "black"))
     addPiece(new Bishop(0,5,-1 , "black"))
+
+    addPiece(new Queen(0,4,-1 , "black"))
 
     for(let i = 0 ; i < 8 ; i++)
         addPiece(new BPawn(1 , i , -1 , "default"))
