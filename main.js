@@ -2,27 +2,23 @@ import './style.css'
 import {Piece , WPawn , BPawn , Rook , Bishop , Knight , Queen , King } from './lib/Pices'
 import BOARD from "./lib/controller"
 
-let SelectedTiles = []
+let changes = []
 
-let currentTeam = 1
+let selectedPice = undefined
 
-let selectedPice = {}
+const revertChanges = () => {
 
-const cleanSelections = () => {
+    changes.map(change => {
 
-  for(let i = 0 ; i < SelectedTiles.length ; i++) {
+        if(change.action == "paint")
+           BOARD.paint(change.query , change.oldColor)
 
-      let tile = SelectedTiles[i]
+        if(change.action == "putDot")
+            BOARD.removeDot(change.query)
 
-      if(tile.change == "dot")
-      document.getElementById(tile.pos).style.opacity = "0%"
+    })
 
-      if(tile.change == "color")
-      document.getElementById(tile.pos).style.backgroundColor = tile.ogColor
-
-  }    
-
-  SelectedTiles = []
+    changes = []
   
 }
 
@@ -32,44 +28,12 @@ const handleMovnent = (e) => {
   const x = e.target.id[2]
 
   if(!selectedPice)
-    return
+  return
 
-  let isValid = 0
+  if(!BOARD_STATE[selectedPice.y][selectedPice.x].makeMove(y,x))
+   selectedPice = undefined
 
-  for(let i = 0 ; i < SelectedTiles.length ; i++) {
-      
-      const selectedTileY = SelectedTiles[i].pos[1]
-      const selectedTileX = SelectedTiles[i].pos[2]
-
-      if( selectedTileX === x && selectedTileY === y) {
-          isValid = 1
-          break
-      }
-  }
-
-  if(!isValid)
-    return
-
-  const pieceDomElement = document.getElementById(`P${selectedPice.y}${selectedPice.x}`)
-
-  pieceDomElement.style.top = `${( parseInt(y) * 78.125)}px`
-  pieceDomElement.style.left = `${( parseInt(x) *78.125 )}px`
-
-  pieceDomElement.id = `P${y}${x}`
-
-  cleanSelections()
-
-  const _y = parseInt(selectedPice.y)
-  const _x = parseInt(selectedPice.x) 
-
-  const temp = BOARD_STATE[_y][_x]
-  temp.y = y
-  temp.x = x
-  
-  BOARD_STATE[_y][_x] = undefined
-  BOARD_STATE[y][x] = temp 
-
-  currentTeam = -currentTeam
+  revertChanges()
 
 }
 
@@ -118,123 +82,57 @@ const generateGrid = () => {
 
 }
 
-const handleSelection = async e => {
+const checkCurrentPlayer = (pieceState) => {
+    if(currentTeam !== pieceState.team)
+    return 0
+    return 1
+}
 
-  const y = parseInt(e.target.id[1])
-  const x = parseInt(e.target.id[2])
+const before = (action , pieceState) => {
 
-  const piece = BOARD_STATE[y][x]
+    if(selectedPice && action == "selection") {
+        if(!BOARD_STATE[selectedPice.y][selectedPice.x].makeMove(pieceState.y , pieceState.x)) 
+            selectedPice = undefined
+        return false
+    }
 
-  if( currentTeam !== piece.team )
-  return
+    if(changes.length > 0)
+      revertChanges()
 
-  if(selectedPice.name)
-    cleanSelections()
+    if(action == "selection")
+    return checkCurrentPlayer(pieceState)
 
-  selectedPice = {...piece}
+    return true
 
-  let moves = {}
+}
 
-  if(piece.name == "WPawn")
-      moves = WPawn.moves
-  
+const afterSelection = (state) => {
 
-  if(piece.name == "BPawn")
-      moves = BPawn.moves
+        selectedPice = state.selected
 
+        changes.push(...state.changes)
 
-  const colorGreen = (x , y) => {
+}
 
-      const ogColor = document.getElementById(`C${y}${x}`).style.backgroundColor
+const afterMove = () => {
+    selectedPice = undefined
+    currentTeam = -currentTeam
+}
 
-      document.getElementById(`C${y}${x}`).style.backgroundColor = "green"
+const after = (action , state) => {
 
-      SelectedTiles.push({
-          pos:`C${y}${x}`,
-          change:"color",
-          ogColor
-      })
+    if(action == "selection")
+    return afterSelection(state)
 
-  }
-
-  const putDot = (x , y) => {
-
-      document.getElementById(`S${y}${x}`).style.opacity = "100%"
-
-      SelectedTiles.push({
-          pos:`S${y}${x}`,
-          change:"dot"
-      })
-
-  }
-
-  const colorRed = (x , y) => {
-      
-      const ogColor = document.getElementById(`C${y}${x}`).style.backgroundColor
-
-      document.getElementById(`C${y}${x}`).style.backgroundColor = "red"
-
-      SelectedTiles.push({
-          pos:`C${y}${x}`,
-          change:"color",
-          ogColor
-      })
-
-  }
-
-  Object.keys(moves).forEach(key => {
-
-      const allowedMove = moves[key]
-
-      //sorry for this spagety code may refactor later
-      
-      if(allowedMove.type == "vertical") {
-
-          let verticalSteps = parseInt(allowedMove.j[1])
-
-          //only the pawn has this propert
-          if(moves.firstMove ) {
-              verticalSteps +=1;
-          }
-
-          if(allowedMove.j[0] == "+")
-          for(let i = y ; i >= y-verticalSteps ; i--) {
-              if(i==y)
-              colorGreen(x,i)
-              else if( BOARD_STATE[i][x]?.team === -currentTeam) {
-                  if(piece.name === "BPawn" || piece.name === "WPawn")
-                  break
-                  colorRed(x,i)
-                  break
-              }
-              else if( BOARD_STATE[i][x]?.team === currentTeam) {
-                  break;
-              }
-              else
-              putDot(x,i)               
-          }
-          else
-           for(let i = y ; i <= y+verticalSteps ; i++) {
-              if(i==y)
-              colorGreen(x,i)
-              else if( BOARD_STATE[i][x]?.team === -currentTeam ) {
-                  colorRed(x,i)
-                  break
-              }
-              else if( BOARD_STATE[i][x]?.team === currentTeam) {
-                  break;
-              }
-              else
-              putDot(x,i)               
-          }
-
-      }
-
-  })
+    if(action == "move")
+    return afterMove()
 
 }
 
 const addPiece = piece => {
+
+    piece.setOption("before" , before)
+    piece.setOption("after" , after)
 
     const pieceDomElement = piece.domElment
 
@@ -246,8 +144,12 @@ const addPiece = piece => {
 
 const initPieces = () => {
 
-    addPiece( new WPawn(6 , 2 , 1 , "default") )
-    addPiece( new WPawn(5 , 1 , -1 , "default") )
+    for(let i = 0 ; i < 8 ; i++)
+        addPiece(new WPawn(6 , i , 1 , "default"))
+
+    for(let i = 0 ; i < 8 ; i++)
+        addPiece(new BPawn(1 , i , -1 , "default"))
+    
 
 }
 
